@@ -2,13 +2,32 @@ const express= require("express");
 const fsPromises = require('fs').promises;
 const fs = require("fs");
 const path = require('path');
-const bodyParser = require("body-parser");
-const { spawn } = require('node:child_process');
-const app=express();
 const ejs = require("ejs");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const { spawn } = require('node:child_process');
+
+const app = express();
+
+
+const whitelist = ["http://localhost:3000"];
+
+const corsOption = {
+    origin: (origin, callback) => {
+        console.log("CORS Origin: " + origin);
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOption));
 
 app.use(bodyParser.urlencoded({extended:true}));
-
+app.use(express.json());
 app.set("view engine",  "ejs");
 
 
@@ -20,47 +39,60 @@ app.get("/", function(req, res){
 
 });
 
-
-// app.post("/",function(req,res){
-//     console.log("working started")
-//     fs.writeFile('instruction.mc', req.body.INPUT, function(error){
-//         if(error){
-//             console.log(`error is ${error.message}`);
-//         }
-
-        
-//     })
-
-    app.post("/",async(req,res)=>{
-        console.log("working started")
-        console.log(req.body.input1)
-        fs.writeFile('instruction.mc', req.body.input1, function(error){
-            
-            if(error){
-                console.log(`error is ${error.message}`);
-            }
+app.post("/pipeline/:btb/:df",async(req,res)=>{
+    const btb = req.params.btb;
+    const df = req.params.df;
     
-            
-        })
-    
-
-    const  ls = spawn("./a.out", [], {shell : true});
-    // ls.stdout.on('data', async(data) => {
-    // // await fsPromises.writeFile(path.join(__dirname, "output.txt"), data);
-
-    // console.log(`stdout: ${data}`);
-
-        
-        const data = await fsPromises.readFile(path.join(__dirname,"output.txt"),"utf-8");
-        res.render("output", {
-            data:data
-        });
-        
-    
+    console.log("Pipeline working started")
+    //console.log(req.body)
+    await fsPromises.writeFile('instruction.mc', req.body.data, function(error){   
+        if(error){
+            console.log(`error is ${error.message}`);
+        }
     })
+    
+    const ls = async() => {
+        if (btb == 0 && df == 0) {console.log("nodf_nobtb\n"); await spawn("cmd.exe", ['/c', 'pipeline_nodf_nobtb.exe']);}
+        else if (btb == 1 && df == 0) {console.log("nodf_btb\n"); await spawn("cmd.exe", ['/c', 'pipeline_nodf_btb.exe']);}
+        else if (btb == 0 && df == 1) {console.log("df_nobtb\n"); await spawn("cmd.exe", ['/c', 'pipeline_df_nobtb.exe']);}
+        else if (btb == 1 && df == 1) {console.log("df_btb\n"); await spawn("cmd.exe", ['/c', 'pipeline_df_btb.exe']);}
+    }
+    await ls();
+    const data = await fsPromises.readFile(path.join(__dirname,"output.txt"),"utf-8");
+        
+    const newData = await divide(data);
+    newData.unshift(data);
+
+    res.send(newData);
+});
 
 
 
+
+app.post("/singleCycle",async(req,res)=>{
+    console.log("SingleCycle working started")
+    //console.log(req.body)
+    await fsPromises.writeFile('instruction.mc', req.body.data, function(error){   
+        if(error){
+            console.log(`error is ${error.message}`);
+        }
+    })
+    
+    const ls = async() => await spawn("cmd.exe", ['/c', 'singleCycle.exe']);
+    await ls();
+
+    const data = await fsPromises.readFile(path.join(__dirname,"output.txt"),"utf-8");
+    // console.log(data);    
+    const newData = await divide(data);
+    newData.unshift(data);
+    
+    res.send(newData);
+});
+
+const divide = async(data) => {
+    const newData = data.split('$');    
+    return newData;       
+};
 
 app.listen(8000,function(){
     console.log("server is running at port 8000");

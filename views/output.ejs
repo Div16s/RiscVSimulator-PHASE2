@@ -50,6 +50,10 @@
 </head>
 <body>
     <h1 class="text-white">OUTPUT: </h1>
-    <textarea name="input2" rows="" placeholder="Output"> <%= data %></textarea>
+    <%let count = 0;%>
+    <textarea name="input2" rows="" placeholder="Output"> <%= data[count] %></textarea>
+    <button onclick=<%-count++;%>>
+        Run 
+    </button>
 </body>
 </html>

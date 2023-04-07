@@ -27,14 +27,51 @@ map<string,char> pair_of_instr_type_opcode;
 
 // instruction memry is stored as integer string
 map<int,string> instructrion_memory_map;
+
 string hex2bin(string);   //function to convert hexadecimal to binary
 string dec2hex();        //function to convert decimal to hexadecimal
+
 void RiscVSimulator();   //function to run risc-v simulator
+
 void fetch();
 void decode();
 void execute();
 void memory();
 void write_back();
+
+//--------------
+//Pipelines
+
+struct IF_DE {
+    int pc;
+    string inst;
+} IF_DE_p;
+
+struct DE_EX {
+    int pc;
+    int branchTarget;
+    int a;
+    int b;
+    int op2;
+    string inst;
+    //Control lines
+} DE_EX_p;
+
+struct EX_MA {
+    int pc;
+    int alu_result;
+    string inst;
+    //control lines
+} EX_MA_p;
+
+struct MA_WB {
+    int pc;
+    int idResult;
+    int alu_result;
+    string inst;
+} MA_WB_p;
+//--------------
+
 
 int main(){
 
@@ -422,11 +459,7 @@ void execute(){
     //immediate starts
     else if(alu_op=="addi"){
         aluop_result = op1+immediate;
-    }
-    else if(alu_op=="subi"){
-        aluop_result = op1-immediate;
-    }
-    else if(alu_op=="xori"){
+    } else if(alu_op=="xori"){
         aluop_result = op1^immediate;
     }
     else if(alu_op=="ori"){
@@ -554,6 +587,10 @@ void fetch(){
     cout<<"FETCH: Instruction  "<<current_instruction<<" fetched from address "<<"0x"<<pc;
     fetchResult=bset1;
     nextPc=pc+4;
+
+    //Filling pipeline 
+    IF_DE_p.inst = current_instruction;
+    IF_DE_p.pc = pc; 
 };
 
 void decode(){
@@ -689,6 +726,12 @@ void decode(){
     
     cout<<"func3 : "<<func3<<" func7 : "<<func7<<endl;
 
+
+    DE_EX_p.pc = pc;
+    DE_EX_p.branchTarget = 
+    DE_EX_p.a = op1;
+    DE_EX_p.a = op2;
+    
 }
 
 string dec2hex(){

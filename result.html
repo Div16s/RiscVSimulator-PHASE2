@@ -7,26 +7,12 @@
     <title>Document</title>
 </head>
 <body>
+    <%count = 0;%>
     <textarea name="result" id="result" cols="30" rows="10">
-
+        <%= data[count] %>
     </textarea>
-
-
-
-
-//         const fs = require('fs')
-//         fs.readFile('tp.txt', (err, inputD) => {
-//         if (err) throw err;
-
-//         console.log(inputD.toString());
-// })
-
-
-<script>
-  let people = ['geddy', 'neil', 'alex'];
-  let html = ejs.render('<%= people.join(", "); %>', {people: people});
-  console.log(html[0]);
-</script>
-
+    <button onclick=<%- count++; %>
+        Run 
+    </button>
 </body>
 </html>

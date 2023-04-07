@@ -27,56 +27,17 @@ map<string,char> pair_of_instr_type_opcode;
 
 // instruction memry is stored as integer string
 map<int,string> instructrion_memory_map;
-
 string hex2bin(string);   //function to convert hexadecimal to binary
 string dec2hex();        //function to convert decimal to hexadecimal
-
 void RiscVSimulator();   //function to run risc-v simulator
-
 void fetch();
 void decode();
 void execute();
 void memory();
 void write_back();
 
-//--------------
-//Pipelines
 
-struct IF_DE {
-    int pc;
-    string inst;
-};
-
-struct DE_EX {
-    int pc;
-    int branchTarget;
-    int a;
-    int b;
-    int op2;
-    string inst;
-    //Control lines
-};
-
-struct EX_MA {
-    int pc;
-    int alu_result;
-    string inst;
-    //control lines
-};
-
-struct IF_DE {
-    int pc;
-    int idResult;
-    int alu_result;
-    string inst;
-};
-
-struct IF_DE {
-    int pc;
-    string inst;
-};
-//--------------
-
+int clk=1;
 
 int main(){
 
@@ -393,11 +354,11 @@ string hex2bin(string s){
 
 //function to run single phase risc-v simulator
 void RiscVSimulator() {
-    fetch();
-    decode();
-    execute();
-    memory();
-    write_back();  
+    fetch(); clk++;
+    decode(); clk++;
+    execute(); clk++;
+    memory(); clk++;
+    write_back(); clk++;
 };
 
 
@@ -414,7 +375,7 @@ void memory(){
     } else {
         cout<<"MEMORY: No memory operation to perform.\n";
     }
-
+    
     // for(int i=0;i<=51;i++){
     //     cout<<main_mem[4*i-1]<<" ";
     // }
@@ -424,11 +385,17 @@ void write_back(){
     if(instr_type!='S' && instr_type!='B' && rd!=0) {
         registerFile[rd]=aluop_result;
         cout<<"WRITEBACK: writing "<<aluop_result<<" to "<<"Register R"<<find_rd()<<endl;
-        cout<<endl;
+        //cout<<endl;
     } else {
         cout<<"WRITEBACK: No write back! "<<endl;
-        cout<<endl;
+        //cout<<endl;
     }
+    cout<<"%";
+    for (int i=0; i<32; i++) {
+        cout<<"x"<<i<<":"<<registerFile[i]<<"%";
+    }
+    cout<<"clk:"<<clk<<"%";
+    cout<<"\n$\n";
 }
 
 void execute(){
